@@ -1,7 +1,5 @@
 package com.ps.imgclassifier.model;
 
-import java.sql.Blob;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,13 +15,17 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "serial")
 	private Long id;
+    
     @Column(name="fileName")
 	private String fileName;
+    
+//  Image description assigned from neural network result
     @Column(name="fileDescription")
 	private String fileDescription;
+    
     @Column(name="content")
 	@Lob
-	private Blob content;
+	private byte[] content;
     
 	public Long getId() {
 		return id;
@@ -43,10 +45,10 @@ public class Image {
 	public void setFileDescription(String fileDescription) {
 		this.fileDescription = fileDescription;
 	}
-	public Blob getContent() {
+	public byte[] getContent() {
 		return content;
 	}
-	public void setContent(Blob content) {
+	public void setContent(byte[] content) {
 		this.content = content;
 	}
     
