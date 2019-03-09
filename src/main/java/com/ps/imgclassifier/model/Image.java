@@ -9,7 +9,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="images")
+@Table(name="img")
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,14 +19,25 @@ public class Image {
     @Column(name="fileName")
 	private String fileName;
     
-//  Image description assigned from neural network result
-    @Column(name="fileDescription")
-	private String fileDescription;
+    @Column(name="filetype")
+	private String fileType;
     
     @Column(name="content")
 	@Lob
 	private byte[] content;
     
+    @Column(nullable=true, insertable=false, updatable=false)
+    private String src;
+    
+    public Image() {
+    	
+    }
+    
+	public Image(Long id, String fileName, String src) {
+		this.id = id;
+		this.fileName = fileName;
+		this.src = src;
+	}
 	public Long getId() {
 		return id;
 	}
@@ -39,17 +50,23 @@ public class Image {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
-	public String getFileDescription() {
-		return fileDescription;
+	public String getFileType() {
+		return fileType;
 	}
-	public void setFileDescription(String fileDescription) {
-		this.fileDescription = fileDescription;
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
 	}
 	public byte[] getContent() {
 		return content;
 	}
 	public void setContent(byte[] content) {
 		this.content = content;
+	}
+	public String getSrc() {
+		return src;
+	}
+	public void setSrc(String src) {
+		this.src = src;
 	}
     
     

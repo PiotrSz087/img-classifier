@@ -1,8 +1,9 @@
 package com.ps.imgclassifier.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ps.imgclassifier.model.Image;
 import com.ps.imgclassifier.repository.ImageRepo;
@@ -18,7 +19,6 @@ public class UploadServiceImplementation implements UploadService {
 	}
 	
 	@Override
-	@Transactional
 	public void save(Image img) {
 		imgRepo.save(img);
 	}
@@ -26,6 +26,11 @@ public class UploadServiceImplementation implements UploadService {
 	@Override
 	public Image getOne(Long id) {	
 		return imgRepo.getOne(id);
+	}
+
+	@Override
+	public List<Image> findAll() {
+		return imgRepo.findAll();
 	}
 
 

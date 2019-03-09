@@ -1,17 +1,21 @@
 package com.ps.imgclassifier.controller;
 
 import java.io.IOException;
-
-import javax.servlet.http.HttpServletResponse;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.ps.imgclassifier.model.Image;
 import com.ps.imgclassifier.service.UploadService;
@@ -25,34 +29,46 @@ public class UploadController {
 	public UploadController(UploadService uploadService) {
 		this.uploadService = uploadService;
 	}
-
-    @GetMapping("/list")
+    
+    @GetMapping("/upload")
     public String showUploadForm() {
     	return "image-upload";
     }
     
-    @GetMapping("/images")
-    public String showImagesGallery() {
-    	return "image-gallery";
-    }
-    
     @PostMapping("save")
     public String saveToDb(@RequestParam("file") MultipartFile file) throws IOException {
-    	Image img = new Image();
-    	img.setFileName(file.getOriginalFilename());
-    	img.setFileDescription("none at the moment");
-    	img.setContent(file.getBytes());
+    	if (file.getBytes().length > 0) {
+    		Image img = new Image();
+    		img.setFileName(file.getOriginalFilename());
+    		img.setFileType(file.getContentType());
+    		img.setContent(file.getBytes());
     	
-    	uploadService.save(img);
+    		uploadService.save(img);
     	
-    	return "redirect:/list";
+    		return "redirect:/list";
+    	}
+    	
+    	return "redirect:/upload";
     }
     
+    @GetMapping("/list")
+    public String showImageGallery(Model theModel) {
+    	theModel.addAttribute("images", uploadService.findAll().stream()
+		        .map(img -> new Image(img.getId(), img.getFileName(), MvcUriComponentsBuilder
+		        		.fromMethodName(UploadController.class, "getImage", img.getId().toString()).build().toString()))
+				.collect(Collectors.toList()));
+    	
+    	return "image-gallery";
+    }  
+ 
     @RequestMapping(value = "/imgFromDb", method = RequestMethod.GET)
-    public void getImage(@RequestParam(value = "id") Long id, HttpServletResponse response) throws IOException {
-    	Image img = uploadService.getOne(id);
-    	response.setContentType("image/jpeg, image/jpg, image/png, image/gif");
-        response.getOutputStream().write(img.getContent());
-        response.getOutputStream().close();
-    }
+    public ResponseEntity<byte[]> getImage(@RequestParam(value = "id") Long id) throws IOException {
+
+    	 Image img = uploadService.getOne(id);
+    	 
+          return ResponseEntity.ok()
+        		  .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + img.getFileName() + "\"")
+        		  .contentType(MediaType.valueOf(img.getFileType()))
+        		  .body(img.getContent());
+      }
 }

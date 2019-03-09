@@ -5,7 +5,14 @@
 <title>Insert title here</title>
 </head>
 <body>
-<img src="/imgFromDb?id=1">
-<img src="/imgFromDb?id=2">
+<div>
+		<ul>
+			<li th:each="img : ${images}">
+				<img th:src="${img.src}" />
+				<p th:text="'Id: ' + ${img.id}" />
+				<p th:text="'File name: ' + ${img.fileName}" />
+			</li>
+		</ul>
+	</div>
 </body>
 </html>
