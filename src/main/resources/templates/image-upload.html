@@ -1,14 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+<meta charset="UTF-8">
+<title>Title</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@0.1.1"></script>
 </head>
 <body>
-ddd
-   <form th:action="@{save}" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" multiple="multiple"/>
-            <input type="submit" value="upload" />
-   </form>
+	<form th:action="@{save}" method="post" enctype="multipart/form-data">
+		<input id="classified" type="text" value="" name="tensor" /> 
+		<input type="file" name="file" multiple="multiple" accept="image/*" onchange="classify(event)" /> 
+		<button id="button">Submit</button>
+	</form>
+	<img id="img" />
+	<p id="output"></p>
 </body>
+<script>
+	var button = document.getElementById('button');
+	var input = document.getElementById('classified');
+	button.disabled = true;
+	input.disabled = true;
+	async function classify(event) {
+		const imgSrc = URL.createObjectURL(event.target.files[0]);
+		const imgTypes = ['image/gif', 'image/jpeg', 'image/png', 'image/jpg'];
+		if (imgTypes.includes(event.target.files[0].type)) {
+			document.getElementById('img').src = imgSrc;
+			if (imgSrc != null) {
+				var clsf = await classifyImage(imgSrc);
+				document.getElementById('output').innerHTML = clsf;
+				input.value = clsf;
+				input.disabled = !input.disabled;
+				button.disabled = !button.disabled;
+			}
+		}
+		else {
+			document.getElementById('output').innerHTML = "incorrect file type!";
+		}
+	}
+
+	async function classifyImage(imgSrc) {
+		var img = new Image();
+		img.crossOrigin = 'anonymous';
+		img.src = imgSrc;
+
+		const model = await mobilenet.load();
+		const predictions = await model.classify(img);
+		return predictions[0].className;
+	}
+</script>
 </html>

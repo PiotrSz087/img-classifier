@@ -22,6 +22,9 @@ public class Image {
     @Column(name="filetype")
 	private String fileType;
     
+    @Column(name="resultRecognition")
+    private String resultRecognition;
+    
     @Column(name="content")
 	@Lob
 	private byte[] content;
@@ -33,9 +36,10 @@ public class Image {
     	
     }
     
-	public Image(Long id, String fileName, String src) {
+	public Image(Long id, String fileName, String resultRecognition, String src) {
 		this.id = id;
 		this.fileName = fileName;
+		this.resultRecognition = resultRecognition;
 		this.src = src;
 	}
 	public Long getId() {
@@ -67,6 +71,14 @@ public class Image {
 	}
 	public void setSrc(String src) {
 		this.src = src;
+	}
+
+	public String getResultRecognition() {
+		return resultRecognition;
+	}
+
+	public void setResultRecognition(String resultRecognition) {
+		this.resultRecognition = resultRecognition;
 	}
     
     
