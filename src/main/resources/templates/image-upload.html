@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Title</title>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@0.1.1"></script>
+<script type="text/javascript" src="/js/image-classes.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"> </script>
 </head>
 <body>
 	<form th:action="@{save}" method="post" enctype="multipart/form-data">
@@ -20,6 +20,7 @@
 	var input = document.getElementById('classified');
 	button.disabled = true;
 	input.disabled = true;
+	
 	async function classify(event) {
 		const imgSrc = URL.createObjectURL(event.target.files[0]);
 		const imgTypes = ['image/gif', 'image/jpeg', 'image/png', 'image/jpg'];
@@ -38,14 +39,37 @@
 		}
 	}
 
-	async function classifyImage(imgSrc) {
-		var img = new Image();
-		img.crossOrigin = 'anonymous';
-		img.src = imgSrc;
+	async function loadMobilenet() {
+		var mod = undefined;
+		mod = await tf.loadModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json')
 
-		const model = await mobilenet.load();
-		const predictions = await model.classify(img);
-		return predictions[0].className;
-	}
+		return mod;
+		}
+
+	async function loadImage(imgSrc) {
+		var img = new Image();	
+		img.src = await imgSrc;
+		img.width = 224;
+		img.height = 224;
+		return img;
+		}
+
+	function preprocessImage(img) {
+		let tensor = tf.fromPixels(img).resizeNearestNeighbor([224, 224]).toFloat();
+		
+		return tensor.div(tf.scalar(127)).sub(tf.scalar(1)).expandDims();
+		}
+
+	async function classifyImage(imgSrc) {
+		var model = await loadMobilenet();
+		var img = await loadImage(imgSrc);
+		var prepr = preprocessImage(img);
+		var predictions = await model.predict(prepr).flatten().argMax();
+		var id = predictions.toString().replace('Tensor','').trim();
+		
+		return Array.of(IMAGENET_CLASSES[id]);
+		}
+
+	
 </script>
 </html>
