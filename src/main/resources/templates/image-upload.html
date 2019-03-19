@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Title</title>
+<script type="text/javascript" src="/js/image-classes.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"> </script>
+</head>
+<body>
+	<form th:action="@{save}" method="post" enctype="multipart/form-data">
+		<input id="classified" type="text" value="" name="tensor" /> 
+		<input type="file" name="file" multiple="multiple" accept="image/*" onchange="classify(event)" /> 
+		<button id="button">Submit</button>
+	</form>
+	<img id="img" />
+	<p id="output"></p>
+</body>
+<script>
+	var button = document.getElementById('button');
+	var input = document.getElementById('classified');
+	button.disabled = true;
+	input.disabled = true;
+	
+	async function classify(event) {
+		const imgSrc = URL.createObjectURL(event.target.files[0]);
+		const imgTypes = ['image/gif', 'image/jpeg', 'image/png', 'image/jpg'];
+		if (imgTypes.includes(event.target.files[0].type)) {
+			document.getElementById('img').src = imgSrc;
+			if (imgSrc != null) {
+				var clsf = await classifyImage(imgSrc);
+				document.getElementById('output').innerHTML = clsf;
+				input.value = clsf;
+				input.disabled = !input.disabled;
+				button.disabled = !button.disabled;
+			}
+		}
+		else {
+			document.getElementById('output').innerHTML = "incorrect file type!";
+		}
+	}
+
+	async function loadMobilenet() {
+		var mod = undefined;
+		mod = await tf.loadModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json')
+
+		return mod;
+		}
+
+	async function loadImage(imgSrc) {
+		var img = new Image();	
+		img.src = await imgSrc;
+		img.width = 224;
+		img.height = 224;
+		return img;
+		}
+
+	function preprocessImage(img) {
+		let tensor = tf.fromPixels(img).resizeNearestNeighbor([224, 224]).toFloat();
+		
+		return tensor.div(tf.scalar(127)).sub(tf.scalar(1)).expandDims();
+		}
+
+	async function classifyImage(imgSrc) {
+		var model = await loadMobilenet();
+		var img = await loadImage(imgSrc);
+		var prepr = preprocessImage(img);
+		var predictions = await model.predict(prepr).flatten().argMax();
+		var id = predictions.toString().replace('Tensor','').trim();
+		
+		return Array.of(IMAGENET_CLASSES[id]);
+		}
+
+	
+</script>
+</html>
